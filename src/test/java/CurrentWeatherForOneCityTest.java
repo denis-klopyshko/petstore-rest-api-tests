@@ -153,8 +153,8 @@ public class CurrentWeatherForOneCityTest {
 
     // Should find nearest city to geographic point by coordinates
     @Test
-    public void shouldReturnWeatherOfNearestCityOfCoords() throws ApiResponseException {
-        Coordinates coordinates = new Coordinates(64.299662, -23.816441 );
+    public void shouldReturnWeatherOfNearestCityByCoords() throws ApiResponseException {
+        Coordinates coordinates = Coordinates.builder().lat(64.299662).lon(-23.816441).build();
         QueryParameters queryParameters = new QueryParameters();
         queryParameters.setCoordinates(coordinates);
         WeatherData weatherData = weatherRepository.getWeather(queryParameters);
