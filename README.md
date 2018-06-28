@@ -1,11 +1,12 @@
+Automated Tests for [PetStore](https://petstore.swagger.io)
+
 ## Requirements
 * Java 8
 * Maven 3.5.3
 
 ## Running tests
 ```
-1. git clone https://github.com/devchallenge-qa/devchallenge.it---qa---1.git
-2. cd devchallenge.it-qa-2
-3. mvn package
+1. git clone https://github.com/denis-klopyshko/petstore-rest-api-tests.git
+2. cd petstore-rest-api-tests
 4. mvn clean test
 ```
