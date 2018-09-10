@@ -1,4 +1,4 @@
-Automated Tests for [PetStore](https://petstore.swagger.io)
+Automated REST API Tests for [PetStore](https://petstore.swagger.io)
 
 ## Requirements
 * Java 8

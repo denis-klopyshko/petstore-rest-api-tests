@@ -9,23 +9,21 @@ import io.petstore.util.HttpClient;
 import io.petstore.dto.Pet;
 import io.petstore.exception.ApiResponseException;
 
-import javax.xml.ws.Endpoint;
 import java.io.File;
 import java.util.*;
 
 import static com.jayway.restassured.RestAssured.given;
 
 public class PetServiceImpl implements PetService {
-
-    private HttpClient api;
+    private HttpClient httpClient;
 
     public PetServiceImpl() {
-        this.api = new HttpClient();
+        this.httpClient = new HttpClient();
     }
 
     @Override
     public ValidatableResponse addPet(final Pet petToAdd){
-        return api.doPost(Endpoints.PET_PATH, petToAdd).then();
+        return httpClient.doPost(Endpoints.PET_PATH, petToAdd).then();
     }
 
     @Override
@@ -35,7 +33,7 @@ public class PetServiceImpl implements PetService {
         for(Pet.PetStatus st : status){
             queryParams.put("status", st.getValue());
         }
-        Response resp = api.doGet(Endpoints.FIND_PET_BY_STATUS_PATH, queryParams);
+        Response resp = httpClient.doGet(Endpoints.FIND_PET_BY_STATUS_PATH, queryParams);
         try {
             pets = Arrays.asList(new ObjectMapper().readValue(resp.asString(), Pet[].class));
         } catch (Exception e) {
@@ -47,7 +45,7 @@ public class PetServiceImpl implements PetService {
     @Override
     public Pet findPetById(long id) throws ApiResponseException{
        Pet pet = null;
-       Response resp = api.doGet(Endpoints.PET_PATH + id);
+       Response resp = httpClient.doGet(Endpoints.PET_PATH + id);
        try{
            pet = resp.as(Pet.class);
        } catch(Exception e){
@@ -59,12 +57,12 @@ public class PetServiceImpl implements PetService {
     @Override
     public ValidatableResponse updatePet(final Pet pet){
         assert pet != null;
-        return api.doPut(Endpoints.PET_PATH, pet).then();
+        return httpClient.doPut(Endpoints.PET_PATH, pet).then();
     }
 
     @Override
     public ValidatableResponse deletePetById(long id){
-       return api.doDelete(Endpoints.PET_PATH + id).then();
+       return httpClient.doDelete(Endpoints.PET_PATH + id).then();
     }
 
     @Override

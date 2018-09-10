@@ -11,28 +11,28 @@ import static com.jayway.restassured.path.json.JsonPath.from;
 import java.util.Map;
 
 public class PetStoreServiceImpl implements PetStoreService {
-    private HttpClient api;
+    private HttpClient httpClient;
 
     public PetStoreServiceImpl() {
-        this.api = new HttpClient();
+        this.httpClient = new HttpClient();
     }
 
     @Override
     public Map<String, Long> getPetInventoriesByStatus() {
-        Response resp = api.doGet(Endpoints.STORE_IVENTORY_PATH);
+        Response resp = httpClient.doGet(Endpoints.STORE_IVENTORY_PATH);
         return from(resp.asString()).getMap(".");
     }
 
     @Override
     public ValidatableResponse placePetOrder(Order order) {
         assert order != null;
-        return api.doPost(Endpoints.PLACE_ORDER_PATH, order).then();
+        return httpClient.doPost(Endpoints.PLACE_ORDER_PATH, order).then();
     }
 
     @Override
     public Order findOrderById(long orderId) throws ApiResponseException {
         Order order = null;
-        Response resp = api.doGet(Endpoints.PLACE_ORDER_PATH + orderId);
+        Response resp = httpClient.doGet(Endpoints.PLACE_ORDER_PATH + orderId);
         try{
             order = resp.as(Order.class);
         } catch(Exception e){
@@ -43,6 +43,6 @@ public class PetStoreServiceImpl implements PetStoreService {
 
     @Override
     public ValidatableResponse deleteOrderById(long orderId) {
-        return api.doDelete(Endpoints.PLACE_ORDER_PATH + orderId).then();
+        return httpClient.doDelete(Endpoints.PLACE_ORDER_PATH + orderId).then();
     }
 }

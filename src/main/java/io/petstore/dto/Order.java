@@ -20,18 +20,6 @@ public class Order {
     public Order() {
     }
 
-    @Override
-    public String toString() {
-        return "{" +
-                "id=" + id +
-                ", petId=" + petId +
-                ", quantity=" + quantity +
-                ", shipDate=" + shipDate +
-                ", status=" + status +
-                ", complete=" + complete +
-                '}';
-    }
-
     public enum OrderStatus {
         @JsonProperty("placed")
         PLACED("placed"),

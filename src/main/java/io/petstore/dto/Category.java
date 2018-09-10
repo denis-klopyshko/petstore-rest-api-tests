@@ -10,12 +10,4 @@ public class Category {
 
     public Category() {
     }
-
-    @Override
-    public String toString() {
-        return "{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                '}';
-    }
 }

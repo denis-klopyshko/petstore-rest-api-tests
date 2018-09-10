@@ -103,6 +103,7 @@
                     <configuration>
                         <systemPropertyVariables>
                             <buildDirectory>${project.build.directory}</buildDirectory>
+                            <baseUrl>http://petstore.swagger.io/v2/</baseUrl>
                         </systemPropertyVariables>
                         <testFailureIgnore>true</testFailureIgnore>
                         <includes>

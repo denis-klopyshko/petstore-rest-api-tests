@@ -10,30 +10,13 @@ import java.util.Arrays;
 @Builder
 public class Pet {
     private long id;
-
     private Category category;
-
     private String name;
-
     private Tag[] tags;
-
     private String[] photoUrls;
-
     private PetStatus status;
 
     public Pet() {
-    }
-
-    @Override
-    public String toString() {
-        return "{" +
-                "id=" + id +
-                ", category=" + category +
-                ", name='" + name + '\'' +
-                ", tags=" + Arrays.toString(tags) +
-                ", photoUrls=" + Arrays.toString(photoUrls) +
-                ", status=" + status +
-                '}';
     }
 
     public enum PetStatus {

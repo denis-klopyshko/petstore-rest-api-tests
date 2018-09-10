@@ -19,7 +19,7 @@ public class HttpClient {
         RestAssured.requestSpecification = new RequestSpecBuilder()
                 .setAccept(ContentType.JSON)
                 .setContentType(ContentType.JSON)
-                .setBaseUri(Endpoints.BASE_URL)
+                .setBaseUri(System.getProperty("baseUrl"))
                 .log(LogDetail.ALL)
                 .build();
         RestAssured.responseSpecification = new ResponseSpecBuilder()
