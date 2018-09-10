@@ -5,6 +5,7 @@ import io.petstore.dto.Tag;
 import io.petstore.exception.ApiResponseException;
 import io.petstore.service.PetService;
 import io.petstore.service.PetServiceImpl;
+import org.hamcrest.Matchers;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -12,8 +13,12 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.number.OrderingComparison.greaterThan;
+import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertNotNull;
 
 public class PetControllerTest {
@@ -147,7 +152,17 @@ public class PetControllerTest {
 
     @Test
     public void shouldReturnSoldPetsByStatus() throws ApiResponseException {
+        Pet petToAdd = Pet.builder()
+                .id(2001L)
+                .status(Pet.PetStatus.SOLD)
+                .name("Rich")
+                .build();
+        petService.addPet(petToAdd)
+                .statusCode(200)
+                .body("name", equalTo("Rich"));
+
         List<Pet> pets = petService.findPetsByStatus(Pet.PetStatus.SOLD);
+        assertThat(pets, not(empty()));
         for(Pet pet : pets){
             assertThat(pet.getStatus(), equalTo(Pet.PetStatus.SOLD));
         }
@@ -172,10 +187,17 @@ public class PetControllerTest {
 
     @Test
     public void shouldNotUploadNotImageFile(){
-        String path_to_pdf =  "src/main/resources/pdf-sample.pdf";
-        petService.uploadImageByPetId(1L, path_to_pdf, "" )
-                .statusCode(400);
+        Pet petToAdd = Pet.builder()
+                .id(401L)
+                .name("addedPet")
+                .build();
+        petService.addPet(petToAdd)
+                .statusCode(200).contentType(ContentType.JSON)
+                .body("name", equalTo("addedPet"));
 
+        String path_to_pdf =  "src/main/resources/pdf-sample.pdf";
+        petService.uploadImageByPetId(401L, path_to_pdf, "" )
+                .statusCode(400);
     }
 
     /**
@@ -202,13 +224,13 @@ public class PetControllerTest {
                 .build();
         petService.addPet(petToAdd)
                 .statusCode(200).contentType(ContentType.JSON)
-                .body("name", equalTo("PetWithPhoto"))
-                .body("photoUrls", equalTo(null));
+                .body("name", equalTo("PetWithPhoto"));
+
         petService.uploadImageByPetId(101L, PATH_TO_IMAGE, "")
                 .statusCode(200);
 
         Pet pet = petService.findPetById(101L);
-        assertNotNull(pet.getPhotoUrls(), "Pet photoUrls");
+        assertThat(pet.getPhotoUrls().length, greaterThan(0));
     }
 }
 
