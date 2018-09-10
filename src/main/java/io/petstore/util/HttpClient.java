@@ -1,26 +1,29 @@
-package io.petstore.api;
+package io.petstore.util;
 
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.builder.RequestSpecBuilder;
+import com.jayway.restassured.builder.ResponseSpecBuilder;
 import com.jayway.restassured.filter.log.LogDetail;
 import com.jayway.restassured.http.ContentType;
+import com.jayway.restassured.internal.ResponseSpecificationImpl;
 import com.jayway.restassured.response.Response;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import static com.jayway.restassured.RestAssured.given;
 
 public class HttpClient {
-    private static final String BASE_URL = "http://petstore.swagger.io/v2/";
 
     public HttpClient() {
         RestAssured.requestSpecification = new RequestSpecBuilder()
                 .setAccept(ContentType.JSON)
                 .setContentType(ContentType.JSON)
-                .setBaseUri(BASE_URL)
+                .setBaseUri(Endpoints.BASE_URL)
                 .log(LogDetail.ALL)
+                .build();
+        RestAssured.responseSpecification = new ResponseSpecBuilder()
+                .expectContentType(ContentType.JSON)
                 .build();
     }
 

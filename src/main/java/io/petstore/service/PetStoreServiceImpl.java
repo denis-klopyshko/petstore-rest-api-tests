@@ -2,7 +2,8 @@ package io.petstore.service;
 
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.response.ValidatableResponse;
-import io.petstore.api.HttpClient;
+import io.petstore.util.Endpoints;
+import io.petstore.util.HttpClient;
 import io.petstore.dto.Order;
 import io.petstore.exception.ApiResponseException;
 
@@ -11,8 +12,6 @@ import java.util.Map;
 
 public class PetStoreServiceImpl implements PetStoreService {
     private HttpClient api;
-    private String STORE_IVENTORY_URI = "store/inventory";
-    private String PLACE_ORDER_URI = "store/order/";
 
     public PetStoreServiceImpl() {
         this.api = new HttpClient();
@@ -20,20 +19,20 @@ public class PetStoreServiceImpl implements PetStoreService {
 
     @Override
     public Map<String, Long> getPetInventoriesByStatus() {
-        Response resp = api.doGet(STORE_IVENTORY_URI);
+        Response resp = api.doGet(Endpoints.STORE_IVENTORY_PATH);
         return from(resp.asString()).getMap(".");
     }
 
     @Override
     public ValidatableResponse placePetOrder(Order order) {
         assert order != null;
-        return api.doPost(PLACE_ORDER_URI, order).then();
+        return api.doPost(Endpoints.PLACE_ORDER_PATH, order).then();
     }
 
     @Override
     public Order findOrderById(long orderId) throws ApiResponseException {
         Order order = null;
-        Response resp = api.doGet(PLACE_ORDER_URI + orderId);
+        Response resp = api.doGet(Endpoints.PLACE_ORDER_PATH + orderId);
         try{
             order = resp.as(Order.class);
         } catch(Exception e){
@@ -44,6 +43,6 @@ public class PetStoreServiceImpl implements PetStoreService {
 
     @Override
     public ValidatableResponse deleteOrderById(long orderId) {
-        return api.doDelete(PLACE_ORDER_URI + orderId).then();
+        return api.doDelete(Endpoints.PLACE_ORDER_PATH + orderId).then();
     }
 }

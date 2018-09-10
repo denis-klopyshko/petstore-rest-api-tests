@@ -41,8 +41,7 @@ public class PetControllerTest {
                 .build();
 
         petService.addPet(petToAdd)
-                .statusCode(200).contentType(ContentType.JSON)
-                .body("name", equalTo(petName));
+                .statusCode(200).body("name", equalTo(petName));
 
         Pet addedPet = petService.findPetById(petId);
 
@@ -62,7 +61,7 @@ public class PetControllerTest {
                 .build();
 
         petService.addPet(petToAdd)
-                .statusCode(200).contentType(ContentType.JSON)
+                .statusCode(200)
                 .body("tags[0].name", equalTo("dog"))
                 .body("tags[1].name", equalTo("rottweiler"));
     }
@@ -76,11 +75,10 @@ public class PetControllerTest {
                 .build();
 
         petService.addPet(petToAdd)
-                .statusCode(200).contentType(ContentType.JSON)
-                .body("name", equalTo("Max"));
+                .statusCode(200).body("name", equalTo("Max"));
 
         petService.updatePetNameAndStatusById(1L, "Maxik", Pet.PetStatus.SOLD)
-                       .statusCode(200).contentType(ContentType.JSON);
+                       .statusCode(200);
 
         Pet updatedPet = petService.findPetById(1L);
 
@@ -92,8 +90,7 @@ public class PetControllerTest {
     public void shouldNotUpdateNonExistingPet(){
         petService.deletePetById(101L);
         petService.updatePetNameAndStatusById(101L, "Cat", Pet.PetStatus.SOLD)
-                     .statusCode(404)
-                     .contentType(ContentType.JSON);
+                     .statusCode(404);
     }
 
     /**
@@ -107,7 +104,7 @@ public class PetControllerTest {
                 .name("PetDog")
                 .build();
         petService.addPet(petToAdd)
-                .statusCode(200).contentType(ContentType.JSON)
+                .statusCode(200)
                 .body("name", equalTo("PetDog"))
                 .body("status", equalTo(Pet.PetStatus.AVAILABLE.getValue()));
 
@@ -116,7 +113,7 @@ public class PetControllerTest {
                 .status(Pet.PetStatus.PENDING)
                 .name("PetCat").build();
         petService.updatePet(petToUpdate)
-                .statusCode(200).contentType(ContentType.JSON)
+                .statusCode(200)
                 .body("name", equalTo("PetCat"))
                 .body("status", equalTo(Pet.PetStatus.PENDING.getValue()));
     }
@@ -139,11 +136,11 @@ public class PetControllerTest {
                 .name("Masik")
                 .build();
         petService.addPet(petToBeDeleted)
-                .statusCode(200).contentType(ContentType.JSON)
+                .statusCode(200)
                 .body("name", equalTo("Masik"));
 
         petService.deletePetById(petId)
-                .statusCode(200).contentType(ContentType.JSON);
+                .statusCode(200);
 
         petService.findPetById(petId);
     }
@@ -169,7 +166,7 @@ public class PetControllerTest {
     public void shouldUploadPetsImageByPetId(){
        String additionalData = "FavouritePicture";
        petService.uploadImageByPetId(1L, PATH_TO_IMAGE, additionalData )
-               .statusCode(200).contentType(ContentType.JSON)
+               .statusCode(200)
                .body("message", containsString(additionalData));
     }
 
@@ -177,7 +174,7 @@ public class PetControllerTest {
     public void shouldNotUploadNotImageFile(){
         String path_to_pdf =  "src/main/resources/pdf-sample.pdf";
         petService.uploadImageByPetId(1L, path_to_pdf, "" )
-                .statusCode(400).contentType(ContentType.JSON);
+                .statusCode(400);
 
     }
 
@@ -189,7 +186,7 @@ public class PetControllerTest {
     public void shouldNotUploadImageForNonExistingPet(){
         petService.deletePetById(1L);
         petService.uploadImageByPetId(1L, PATH_TO_IMAGE, "")
-                .statusCode(404).contentType(ContentType.JSON);
+                .statusCode(404);
     }
 
     /**
@@ -208,7 +205,7 @@ public class PetControllerTest {
                 .body("name", equalTo("PetWithPhoto"))
                 .body("photoUrls", equalTo(null));
         petService.uploadImageByPetId(101L, PATH_TO_IMAGE, "")
-                .statusCode(200).contentType(ContentType.JSON);
+                .statusCode(200);
 
         Pet pet = petService.findPetById(101L);
         assertNotNull(pet.getPhotoUrls(), "Pet photoUrls");

@@ -8,5 +8,5 @@ Automated Tests for [PetStore](https://petstore.swagger.io)
 ```
 1. git clone https://github.com/denis-klopyshko/petstore-rest-api-tests.git
 2. cd petstore-rest-api-tests
-4. mvn clean test
+3. mvn clean test
 ```

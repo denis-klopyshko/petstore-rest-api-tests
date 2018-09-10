@@ -1,4 +1,3 @@
-import com.jayway.restassured.http.ContentType;
 import io.petstore.dto.Order;
 import io.petstore.dto.Pet;
 import io.petstore.exception.ApiResponseException;
@@ -29,9 +28,7 @@ public class StoreControllerTest {
                 .status(Pet.PetStatus.AVAILABLE)
                 .id(petId)
                 .build();
-        petService.addPet(petToAdd)
-                .statusCode(200).contentType(ContentType.JSON);
-
+        petService.addPet(petToAdd).statusCode(200);
 
         Order orderToAdd = Order.builder()
                 .petId(petToAdd.getId())
@@ -39,7 +36,7 @@ public class StoreControllerTest {
                 .id(1L).status(Order.OrderStatus.PLACED)
                 .build();
         petStoreService.placePetOrder(orderToAdd)
-                .statusCode(200).contentType(ContentType.JSON)
+                .statusCode(200)
                 .body("quantity", equalTo(1))
                 .body("status", equalTo(Order.OrderStatus.PLACED.getValue()));
     }
@@ -58,9 +55,7 @@ public class StoreControllerTest {
                 .status(Pet.PetStatus.AVAILABLE)
                 .id(3L)
                 .build();
-        petService.addPet(petToAdd)
-                .statusCode(200).contentType(ContentType.JSON);
-
+        petService.addPet(petToAdd).statusCode(200);
 
         Order orderToAdd = Order.builder()
                 .petId(petToAdd.getId())
@@ -68,7 +63,7 @@ public class StoreControllerTest {
                 .id(3L).status(Order.OrderStatus.PLACED)
                 .build();
         petStoreService.placePetOrder(orderToAdd)
-                .statusCode(200).contentType(ContentType.JSON)
+                .statusCode(200)
                 .body("quantity", equalTo(1))
                 .body("status", equalTo(Order.OrderStatus.PLACED.getValue()));
 

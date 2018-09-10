@@ -4,18 +4,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.response.ValidatableResponse;
-import io.petstore.api.HttpClient;
+import io.petstore.util.Endpoints;
+import io.petstore.util.HttpClient;
 import io.petstore.dto.Pet;
 import io.petstore.exception.ApiResponseException;
 
+import javax.xml.ws.Endpoint;
 import java.io.File;
 import java.util.*;
 
 import static com.jayway.restassured.RestAssured.given;
 
 public class PetServiceImpl implements PetService {
-    private String PET_PATH = "pet/";
-    private String FIND_PET_BY_STATUS_PATH = "pet/findByStatus";
 
     private HttpClient api;
 
@@ -25,7 +25,7 @@ public class PetServiceImpl implements PetService {
 
     @Override
     public ValidatableResponse addPet(final Pet petToAdd){
-        return api.doPost(PET_PATH, petToAdd).then();
+        return api.doPost(Endpoints.PET_PATH, petToAdd).then();
     }
 
     @Override
@@ -35,7 +35,7 @@ public class PetServiceImpl implements PetService {
         for(Pet.PetStatus st : status){
             queryParams.put("status", st.getValue());
         }
-        Response resp = api.doGet(FIND_PET_BY_STATUS_PATH, queryParams);
+        Response resp = api.doGet(Endpoints.FIND_PET_BY_STATUS_PATH, queryParams);
         try {
             pets = Arrays.asList(new ObjectMapper().readValue(resp.asString(), Pet[].class));
         } catch (Exception e) {
@@ -47,7 +47,7 @@ public class PetServiceImpl implements PetService {
     @Override
     public Pet findPetById(long id) throws ApiResponseException{
        Pet pet = null;
-       Response resp = api.doGet(PET_PATH + id);
+       Response resp = api.doGet(Endpoints.PET_PATH + id);
        try{
            pet = resp.as(Pet.class);
        } catch(Exception e){
@@ -59,12 +59,12 @@ public class PetServiceImpl implements PetService {
     @Override
     public ValidatableResponse updatePet(final Pet pet){
         assert pet != null;
-        return api.doPut(PET_PATH, pet).then();
+        return api.doPut(Endpoints.PET_PATH, pet).then();
     }
 
     @Override
     public ValidatableResponse deletePetById(long id){
-       return api.doDelete(PET_PATH + id).then();
+       return api.doDelete(Endpoints.PET_PATH + id).then();
     }
 
     @Override
@@ -73,7 +73,7 @@ public class PetServiceImpl implements PetService {
                 .contentType("multipart/form-data")
                 .multiPart(new File(pathToImage))
                 .multiPart("additionalMetadata", additionalMetadata)
-                .when().post(PET_PATH + petId + "/uploadImage")
+                .when().post(Endpoints.PET_PATH + petId + "/uploadImage")
                 .then();
     }
 
@@ -83,7 +83,7 @@ public class PetServiceImpl implements PetService {
                 .contentType(ContentType.URLENC)
                 .formParam("name", petName)
                 .formParam("status", status.getValue())
-                .when().post(PET_PATH + petId)
+                .when().post(Endpoints.PET_PATH + petId)
                 .then();
     }
 }
