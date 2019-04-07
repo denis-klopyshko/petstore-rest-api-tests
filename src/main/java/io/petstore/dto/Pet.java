@@ -30,9 +30,11 @@ public class Pet {
         SOLD("sold");
 
         private String value;
+
         public String getValue() {
             return value;
         }
+
         PetStatus(String value) {
             this.value = value;
         }
