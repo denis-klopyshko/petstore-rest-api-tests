@@ -1,8 +1,10 @@
 package io.petstore.client;
 
+import io.petstore.filters.LoggingFilter;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.builder.ResponseSpecBuilder;
+import io.restassured.filter.Filter;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -14,19 +16,14 @@ import static io.restassured.RestAssured.given;
 @Component
 public class HttpClient {
 
-    public HttpClient() {
+    public HttpClient(LoggingFilter filter) {
         RestAssured.requestSpecification = new RequestSpecBuilder()
                 .setAccept(ContentType.JSON)
                 .setContentType(ContentType.JSON)
                 .setBaseUri(System.getProperty("baseUrl"))
-                .log(LogDetail.URI)
-                .log(LogDetail.METHOD)
                 .build();
 
-        RestAssured.responseSpecification = new ResponseSpecBuilder()
-                .log(LogDetail.STATUS)
-                .log(LogDetail.BODY)
-                .build();
+        RestAssured.filters(filter);
     }
 
     public Response doPost(String path, final Object body) {

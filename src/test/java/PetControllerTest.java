@@ -1,187 +1,128 @@
 import io.petstore.dto.Category;
 import io.petstore.dto.Pet;
 import io.petstore.dto.Tag;
-import io.petstore.exception.ApiResponseException;
-import io.petstore.service.PetService;
-import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.number.OrderingComparison.greaterThan;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.core.StringContains.containsString;
 
 public class PetControllerTest extends BaseTest {
-    @Autowired
-    private PetService petService;
-
     private String PATH_TO_IMAGE = "src/main/resources/petImage.jpg";
 
     @Test
-    public void newPetShouldBeAdded() {
-        Category category = new Category(0, "home_pet");
-        Tag[] tag = {new Tag(0, "tag1")};
-        long petId = 1L;
+    public void shouldAddNewPet() {
+        Category category = Category.ofName("home_pet");
+        List<Tag> tag = singletonList(Tag.ofName("tag1"));
         String petName = "Richard";
         Pet petToAdd = Pet.builder()
                 .name(petName)
                 .status(Pet.PetStatus.SOLD)
-                .id(petId)
                 .tags(tag)
                 .category(category)
-                .photoUrls(new String[]{"test"})
+                .photoUrls(singletonList("test"))
                 .build();
 
-        petService.addPet(petToAdd)
-                .then()
-                .statusCode(200)
-                .body("name", equalTo(petName));
+        long addedPetId = successCreatePet(petToAdd).getId();
+        Pet addedPet = petService.findPetById(addedPetId).as(Pet.class);
 
-        Pet addedPet = petService.findPetById(petId).as(Pet.class);
-
-        assertThat(petToAdd, equalTo(addedPet));
+        assertThat(addedPet).as("Should return Pet equal to added one.").isEqualTo(petToAdd);
     }
 
     @Test
     public void newPetWithMultiplyTagsShouldBeAdded() {
-        Tag[] tag = {new Tag(1, "dog"), new Tag(2, "rottweiler")};
-        long petId = 2L;
+        List<Tag> tag = List.of(Tag.ofName("dog"), Tag.ofName("rottweiler"));
         Pet petToAdd = Pet.builder()
                 .name("Richard")
                 .status(Pet.PetStatus.SOLD)
-                .id(petId)
                 .tags(tag)
-                .photoUrls(new String[]{"test"})
+                .photoUrls(singletonList("test"))
                 .build();
 
         petService.addPet(petToAdd)
                 .then()
                 .statusCode(200)
+                .body("name", equalTo(petToAdd.getName()))
                 .body("tags[0].name", equalTo("dog"))
                 .body("tags[1].name", equalTo("rottweiler"));
     }
 
     @Test
     public void shouldUpdatePetNameAndStatusById() {
-        Pet petToAdd = Pet.builder()
-                .id(1L)
-                .name("Max")
-                .status(Pet.PetStatus.AVAILABLE)
-                .build();
+        Pet petToAdd = Pet.ofNameAndStatus("Max", Pet.PetStatus.AVAILABLE);
+        Pet addedPet = successCreatePet(petToAdd);
 
-        petService.addPet(petToAdd)
-                .then()
-                .statusCode(200)
-                .body("name", equalTo("Max"));
+        String updatedName = addedPet.getName() + "_UPDATED";
 
-        petService.updatePetNameAndStatusById(1L, "Maxik", Pet.PetStatus.SOLD)
+        petService.updatePetNameAndStatusById(addedPet.getId(), updatedName, Pet.PetStatus.SOLD)
                 .then()
                 .statusCode(200);
 
-        Pet updatedPet = petService.findPetById(1L).as(Pet.class);
-
-        assertThat(updatedPet.getName(), equalTo("Maxik"));
-        assertThat(updatedPet.getStatus(), equalTo(Pet.PetStatus.SOLD));
-    }
-
-    @Test
-    public void shouldNotUpdateNonExistingPet() {
-        petService.deletePetById(101L);
-        petService.updatePetNameAndStatusById(101L, "Cat", Pet.PetStatus.SOLD)
-                .then()
-                .statusCode(HttpStatus.SC_NOT_FOUND);
-    }
-
-    /**
-     * Replaces all existing pet data with new pet data
-     */
-    @Test
-    public void shouldUpdatePetWithReplacingExistingPetData() {
-        Pet petToAdd = Pet.builder()
-                .id(3L)
-                .status(Pet.PetStatus.AVAILABLE)
-                .name("PetDog")
-                .build();
-        petService.addPet(petToAdd)
+        petService.findPetById(addedPet.getId())
                 .then()
                 .statusCode(200)
-                .body("name", equalTo("PetDog"))
-                .body("status", equalTo(Pet.PetStatus.AVAILABLE.getValue()));
-
-        Pet petToUpdate = Pet.builder()
-                .id(3L)
-                .status(Pet.PetStatus.PENDING)
-                .name("PetCat").build();
-        petService.updatePet(petToUpdate)
-                .then()
-                .statusCode(200)
-                .body("name", equalTo("PetCat"))
-                .body("status", equalTo(Pet.PetStatus.PENDING.getValue()));
+                .body("name", equalTo(updatedName))
+                .body("status", equalTo(Pet.PetStatus.SOLD.getValue()));
     }
 
     @Test
-    public void shouldNotFindNonExistingPetById() {
-        long petId = 1001L;
-        petService.deletePetById(petId);
-        petService.findPetById(petId)
+    public void shouldReturnNotFound_whenUpdatingNonExistingPet() {
+        Pet petToAdd = Pet.ofName("DummyPet");
+        Pet addedPet = successCreatePet(petToAdd);
+
+        petService.deletePetById(addedPet.getId())
+                .then()
+                .statusCode(200);
+
+        petService.updatePetNameAndStatusById(addedPet.getId(), "Cat", Pet.PetStatus.SOLD)
+                .then()
+                .statusCode(HttpStatus.SC_NOT_FOUND)
+                .body("message", equalTo("not found"));
+    }
+
+    @Test
+    public void shouldReturnNotFound_whenFindingDeletedPetById() {
+        Pet petToAdd = Pet.ofName("DummyPet");
+        Pet addedPet = successCreatePet(petToAdd);
+
+        petService.deletePetById(addedPet.getId())
+                .then()
+                .statusCode(200);
+
+        petService.findPetById(addedPet.getId())
                 .then()
                 .statusCode(HttpStatus.SC_NOT_FOUND);
     }
 
     @Test
-    public void petShouldBeDeleted() {
-        long petId = 1L;
-        Pet petToBeDeleted = Pet.builder()
-                .id(petId)
-                .status(Pet.PetStatus.AVAILABLE)
-                .name("Masik")
-                .build();
-        petService.addPet(petToBeDeleted)
-                .then()
-                .statusCode(200)
-                .body("name", equalTo("Masik"));
-
-        petService.deletePetById(petId)
-                .then()
-                .statusCode(200);
-
-        petService.findPetById(petId)
-                .then()
-                .statusCode(HttpStatus.SC_NOT_FOUND);;
-    }
-
-    @Test
-    public void shouldReturnSoldPetsByStatus() throws ApiResponseException {
+    public void shouldReturnSoldPetsByStatus() {
         Pet petToAdd = Pet.builder()
-                .id(2001L)
                 .status(Pet.PetStatus.SOLD)
                 .name("Rich")
                 .build();
-        petService.addPet(petToAdd)
-                .then()
-                .statusCode(200)
-                .body("name", equalTo("Rich"));
+        successCreatePet(petToAdd);
 
-        List<Pet> pets = petService.findPetsByStatus(Pet.PetStatus.SOLD).jsonPath().getList(".");
-        assertThat(pets, not(empty()));
+        List<Pet> pets = petService.findPetsByStatus(Pet.PetStatus.SOLD)
+                .jsonPath()
+                .getList(".", Pet.class);
+        assertThat(pets).hasSizeGreaterThan(0);
         for (Pet pet : pets) {
-            assertThat("Pet Status", pet.getStatus(), equalTo(Pet.PetStatus.SOLD));
+            assertThat(pet.getStatus()).isEqualTo(Pet.PetStatus.SOLD);
         }
     }
 
     @Test
-    public void shouldReturnSoldAndPendingPetsByStatus() throws ApiResponseException {
-        List<Pet> pets = petService.findPetsByStatus(Pet.PetStatus.SOLD, Pet.PetStatus.PENDING)
-                .jsonPath().getList(".");
-        for (Pet pet : pets) {
-            assertThat("Pet Status", pet.getStatus(),
-                    anyOf(equalTo(Pet.PetStatus.SOLD), equalTo(Pet.PetStatus.PENDING)));
-        }
+    public void shouldReturnSoldAndPendingPetsByStatus() {
+        Response response = petService.findPetsByStatus(Pet.PetStatus.SOLD, Pet.PetStatus.PENDING);
+        List<Pet> pets = response.jsonPath().getList(".", Pet.class);
+        assertThat(pets)
+                .extracting("status")
+                .containsAnyOf(Pet.PetStatus.SOLD, Pet.PetStatus.PENDING);
     }
 
     @Test
@@ -194,32 +135,40 @@ public class PetControllerTest extends BaseTest {
     }
 
     @Test
-    public void shouldNotUploadNotImageFile() {
-        Pet petToAdd = Pet.builder()
-                .id(401L)
-                .name("addedPet")
-                .build();
-        petService.addPet(petToAdd)
+    public void shouldReturnError_whenUploadingNotAnImage() {
+        Pet petToAdd = Pet.ofName("addedPet");
+        long id = petService.addPet(petToAdd)
                 .then()
-                .statusCode(200).contentType(ContentType.JSON)
-                .body("name", equalTo("addedPet"));
+                .statusCode(200)
+                .extract()
+                .body()
+                .jsonPath()
+                .getLong("id");
 
-        String path_to_pdf = "src/main/resources/pdf-sample.pdf";
-        petService.uploadImageByPetId(401L, path_to_pdf, "")
-                .then()
-                .statusCode(400);
+        String pathToPdf = "src/main/resources/pdf-sample.pdf";
+        Response response = petService.uploadImageByPetId(id, pathToPdf, "");
+        assertThat(response.getStatusCode())
+                .as("Upload not an image response code")
+                .isEqualTo(HttpStatus.SC_BAD_REQUEST);
     }
 
     /**
      * Expect that we can't load image for non existing pet
-     * May be 404 Not Found with message Pet Not Found
+     * 404 Not Found
      */
     @Test
-    public void shouldNotUploadImageForNonExistingPet() {
-        petService.deletePetById(1L);
-        petService.uploadImageByPetId(1L, PATH_TO_IMAGE, "")
+    public void shouldReturnNotFound_whenUploadImageForNonExistingPet() {
+        Pet petToAdd = Pet.ofName("DummyPet");
+        Pet addedPet = successCreatePet(petToAdd);
+
+        petService.deletePetById(addedPet.getId())
                 .then()
-                .statusCode(404);
+                .statusCode(200);
+
+        Response response = petService.uploadImageByPetId(addedPet.getId(), PATH_TO_IMAGE, "");
+        assertThat(response.getStatusCode())
+                .as("Upload image for non existing pet response code.")
+                .isEqualTo(HttpStatus.SC_NOT_FOUND);
     }
 
     /**
@@ -228,23 +177,22 @@ public class PetControllerTest extends BaseTest {
      * 3. Сheck if pet has photoUrl
      */
     @Test
-    public void petShouldContainsImageUrlAfterImageUploading() throws ApiResponseException {
-        Pet petToAdd = Pet.builder()
-                .id(101L)
-                .name("PetWithPhoto")
-                .build();
-        petService.addPet(petToAdd)
+    public void petShouldContainsImageUrlAfterImageUploading() {
+        Pet petToAdd = Pet.ofName("PetWithPhoto");
+        long id = petService.addPet(petToAdd)
                 .then()
                 .statusCode(200)
-                .contentType(ContentType.JSON)
-                .body("name", equalTo("PetWithPhoto"));
+                .extract()
+                .body()
+                .jsonPath()
+                .getLong("id");
 
-        petService.uploadImageByPetId(101L, PATH_TO_IMAGE, "")
+        petService.uploadImageByPetId(id, PATH_TO_IMAGE, "")
                 .then()
                 .statusCode(200);
 
-        Pet pet = petService.findPetById(101L).as(Pet.class);
-        assertThat(pet.getPhotoUrls().length, greaterThan(0));
+        Pet pet = petService.findPetById(id).as(Pet.class);
+        assertThat(pet.getPhotoUrls()).isNotEmpty();
     }
 }
 

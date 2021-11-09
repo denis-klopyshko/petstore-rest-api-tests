@@ -1,13 +1,25 @@
 package io.petstore.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
+@EqualsAndHashCode(exclude = "id")
 public class Tag {
     private long id;
     private String name;
+
+    public static Tag ofName(String name) {
+        return Tag.builder().name(name).build();
+    }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
+    }
 }

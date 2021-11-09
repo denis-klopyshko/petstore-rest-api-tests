@@ -74,9 +74,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-all</artifactId>
-            <version>${hamcrest.version}</version>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.20.2</version>
             <scope>test</scope>
         </dependency>
 
@@ -111,7 +111,7 @@
                     <configuration>
                         <systemPropertyVariables>
                             <buildDirectory>${project.build.directory}</buildDirectory>
-                            <baseUrl>https://petstore.swagger.io/v2/</baseUrl>
+                            <baseUrl>https://petstore.swagger.io/v2</baseUrl>
                         </systemPropertyVariables>
                         <testFailureIgnore>true</testFailureIgnore>
                         <includes>

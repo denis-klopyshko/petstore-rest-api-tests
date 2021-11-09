@@ -1,36 +1,24 @@
 import io.petstore.dto.Order;
 import io.petstore.dto.Pet;
-import io.petstore.service.PetService;
-import io.petstore.service.PetStoreService;
-import org.springframework.beans.factory.annotation.Autowired;
+import io.restassured.response.Response;
 import org.testng.annotations.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 
 public class StoreControllerTest extends BaseTest {
-
-    @Autowired
-    private PetStoreService petStoreService;
-
-    @Autowired
-    private PetService petService;
-
     @Test
     public void orderForPetShouldBePlaced() {
-        long petId = 2L;
-        Pet petToAdd = Pet.builder()
-                .name("Richard")
-                .status(Pet.PetStatus.AVAILABLE)
-                .id(petId)
-                .build();
-        petService.addPet(petToAdd).then().statusCode(200);
+        Pet petToAdd = Pet.ofNameAndStatus("Richard", Pet.PetStatus.AVAILABLE);
+        Pet addedPet = successCreatePet(petToAdd);
 
         Order orderToAdd = Order.builder()
-                .petId(petToAdd.getId())
+                .petId(addedPet.getId())
                 .quantity(1)
-                .id(1L).status(Order.OrderStatus.PLACED)
+                .status(Order.OrderStatus.PLACED)
                 .build();
+
         petStoreService.placePetOrder(orderToAdd)
+                .then()
                 .statusCode(200)
                 .body("quantity", equalTo(1))
                 .body("status", equalTo(Order.OrderStatus.PLACED.getValue()));
@@ -44,24 +32,23 @@ public class StoreControllerTest extends BaseTest {
 
     @Test
     public void shouldDeletePlacedOrder() {
-        Pet petToAdd = Pet.builder()
-                .name("newPet")
-                .status(Pet.PetStatus.AVAILABLE)
-                .id(3L)
-                .build();
-        petService.addPet(petToAdd).then().statusCode(200);
+        Pet petToAdd = Pet.ofNameAndStatus("newPet", Pet.PetStatus.AVAILABLE);
+        Pet addedPet = successCreatePet(petToAdd);
 
         Order orderToAdd = Order.builder()
-                .petId(petToAdd.getId())
+                .petId(addedPet.getId())
                 .quantity(1)
-                .id(3L).status(Order.OrderStatus.PLACED)
+                .status(Order.OrderStatus.PLACED)
                 .build();
-        petStoreService.placePetOrder(orderToAdd)
+
+        Response response = petStoreService.placePetOrder(orderToAdd);
+        long id = response.jsonPath().getLong("id");
+        response.then()
                 .statusCode(200)
                 .body("quantity", equalTo(1))
                 .body("status", equalTo(Order.OrderStatus.PLACED.getValue()));
 
-        petStoreService.deleteOrderById(orderToAdd.getId())
+        petStoreService.deleteOrderById(id)
                 .then()
                 .statusCode(200);
     }

@@ -1,24 +1,35 @@
 package io.petstore.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.time.Instant;
 import java.util.Date;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(exclude = "id")
 public class Order {
     private long id;
     private long petId;
     private long quantity;
-    private Date shipDate;
+    private Instant shipDate;
     private OrderStatus status;
     private boolean complete;
+
+    @Override
+    public String toString() {
+        return "{" +
+                "id=" + id +
+                ", petId=" + petId +
+                ", quantity=" + quantity +
+                ", shipDate=" + shipDate +
+                ", status=" + status +
+                ", complete=" + complete +
+                '}';
+    }
 
     public enum OrderStatus {
         @JsonProperty("placed")
