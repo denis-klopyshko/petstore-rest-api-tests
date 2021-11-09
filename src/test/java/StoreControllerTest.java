@@ -1,24 +1,19 @@
 import io.petstore.dto.Order;
 import io.petstore.dto.Pet;
-import io.petstore.exception.ApiResponseException;
 import io.petstore.service.PetService;
-import io.petstore.service.PetServiceImpl;
 import io.petstore.service.PetStoreService;
-import io.petstore.service.PetStoreServiceImpl;
-import org.testng.annotations.BeforeClass;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 
-public class StoreControllerTest {
-    private PetStoreService petStoreService;
-    private PetService petService;
+public class StoreControllerTest extends BaseTest {
 
-    @BeforeClass
-    public void setUp() {
-        this.petStoreService = new PetStoreServiceImpl();
-        this.petService = new PetServiceImpl();
-    }
+    @Autowired
+    private PetStoreService petStoreService;
+
+    @Autowired
+    private PetService petService;
 
     @Test
     public void orderForPetShouldBePlaced() {
@@ -28,7 +23,7 @@ public class StoreControllerTest {
                 .status(Pet.PetStatus.AVAILABLE)
                 .id(petId)
                 .build();
-        petService.addPet(petToAdd).statusCode(200);
+        petService.addPet(petToAdd).then().statusCode(200);
 
         Order orderToAdd = Order.builder()
                 .petId(petToAdd.getId())
@@ -41,21 +36,20 @@ public class StoreControllerTest {
                 .body("status", equalTo(Order.OrderStatus.PLACED.getValue()));
     }
 
-    @Test(expectedExceptions = ApiResponseException.class,
-            expectedExceptionsMessageRegExp = "404 - Order not found")
-    public void shouldNotFindNonExistingOrder() throws ApiResponseException {
+    @Test
+    public void shouldNotFindNonExistingOrder() {
         petStoreService.deleteOrderById(1L);
-        petStoreService.findOrderById(1L);
+        petStoreService.findOrderById(1L).then().statusCode(404);
     }
 
     @Test
-    public void shouldDeletePlacedOrder(){
+    public void shouldDeletePlacedOrder() {
         Pet petToAdd = Pet.builder()
                 .name("newPet")
                 .status(Pet.PetStatus.AVAILABLE)
                 .id(3L)
                 .build();
-        petService.addPet(petToAdd).statusCode(200);
+        petService.addPet(petToAdd).then().statusCode(200);
 
         Order orderToAdd = Order.builder()
                 .petId(petToAdd.getId())
@@ -67,6 +61,8 @@ public class StoreControllerTest {
                 .body("quantity", equalTo(1))
                 .body("status", equalTo(Order.OrderStatus.PLACED.getValue()));
 
-        petStoreService.deleteOrderById(orderToAdd.getId()).statusCode(200);
+        petStoreService.deleteOrderById(orderToAdd.getId())
+                .then()
+                .statusCode(200);
     }
 }

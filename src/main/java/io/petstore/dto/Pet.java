@@ -3,11 +3,10 @@ package io.petstore.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-import java.util.Arrays;
-
 @Data
-@AllArgsConstructor
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Pet {
     private long id;
     private Category category;
@@ -15,9 +14,6 @@ public class Pet {
     private Tag[] tags;
     private String[] photoUrls;
     private PetStatus status;
-
-    public Pet() {
-    }
 
     public enum PetStatus {
         @JsonProperty("available")

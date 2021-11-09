@@ -1,8 +1,9 @@
 Automated REST API Tests for [PetStore](https://petstore.swagger.io)
 
 ## Requirements
-* Java 8
-* Maven 3.5.3
+* Java 11
+* Maven 3.6.3
+* Docker
 
 ## Running tests
 ```
